@@ -539,13 +539,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Container has no HEALTHCHECK
                 return;
             }
-            TimeSpan backoff = TimeSpan.FromSeconds(2);
+            var retryCount = 0;
             while (string.Equals(serviceHealth, "starting", StringComparison.OrdinalIgnoreCase))
             {
-                executionContext.Output($"{container.ContainerNetworkAlias} service is starting, waiting {backoff.Seconds} seconds before checking again.");
-                Thread.Sleep(backoff);
-                backoff = backoff.Multiply(2);
-                serviceHealth = await _dockerManger.DockerInspect(context: executionContext, dockerObject: container.ContainerId, options: healthCheck);
+                try
+                {
+                    TimeSpan backoff = BackoffTimerHelper.GetExponentialBackoff(retryCount, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(32), TimeSpan.FromSeconds(2));
+                    executionContext.Output($"{container.ContainerNetworkAlias} service is starting, waiting {backoff.Seconds} seconds before checking again.");
+                    await Task.Delay(backoff, executionContext.CancellationToken);
+                    serviceHealth = await _dockerManger.DockerInspect(context: executionContext, dockerObject: container.ContainerId, options: healthCheck);
+                    retryCount++;
+                }
+                catch (OperationCanceledException ex)
+                {
+                    Trace.Error($"Caught cancellation exception while waiting for container healthcheck: {ex}");
+                    return;
+                }
             }
             if (string.Equals(serviceHealth, "healthy", StringComparison.OrdinalIgnoreCase))
             {
