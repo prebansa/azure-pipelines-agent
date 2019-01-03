@@ -133,9 +133,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 await ContainerHealthcheck(executionContext, container);
             }
-
-            // Asynchronously check health of all sidecar containers with a HEALTHCHECK
-            await Task.WhenAll(containers.FindAll(c => !c.IsJobContainer).Select(c => ContainerHealthcheck(executionContext, c)));
         }
 
         public async Task StopContainersAsync(IExecutionContext executionContext, object data)
