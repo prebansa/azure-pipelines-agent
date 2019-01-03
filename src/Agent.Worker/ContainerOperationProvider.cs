@@ -133,6 +133,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 await ContainerHealthcheck(executionContext, container);
             }
+
+            // Asynchronously check health of all sidecar containers with a HEALTHCHECK
+            await Task.WhenAll(containers.FindAll(c => !c.IsJobContainer).Select(c => ContainerHealthcheck(executionContext, c)));
         }
 
         public async Task StopContainersAsync(IExecutionContext executionContext, object data)
@@ -539,11 +542,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Container has no HEALTHCHECK
                 return;
             }
-            executionContext.Output($"Waiting for {container.ContainerNetworkAlias} service to become healthy.");
             TimeSpan backoff = TimeSpan.FromSeconds(2);
             while (string.Equals(serviceHealth, "starting", StringComparison.OrdinalIgnoreCase))
             {
-                executionContext.Output($"{container.ContainerNetworkAlias} service is starting, waiting {backoff.Seconds} before checking again.");
+                executionContext.Output($"{container.ContainerNetworkAlias} service is starting, waiting {backoff.Seconds} seconds before checking again.");
                 Thread.Sleep(backoff);
                 backoff = backoff.Multiply(2);
                 serviceHealth = await _dockerManger.DockerInspect(context: executionContext, dockerObject: container.ContainerId, options: healthCheck);
