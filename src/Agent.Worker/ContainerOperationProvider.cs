@@ -129,7 +129,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 await StartContainerAsync(executionContext, container);
             }
 
-            foreach (var container in containers.FindAll(c => !c.IsJobContainer))
+            foreach (var container in containers.Where(c => !c.IsJobContainer))
             {
                 await ContainerHealthcheck(executionContext, container);
             }
