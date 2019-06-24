@@ -115,6 +115,15 @@ namespace Microsoft.VisualStudio.Services.Agent
             {
                 try
                 {
+                    ConnectMonitor(monitorSocketAddress);
+                }
+                catch (Exception e)
+                {
+                    Trace.Error($"Unexpected error occured while connecting monitor");
+                    Trace.Error(e);
+                }
+                try
+                {
                     string[] splitAddress = socketAddress.Split(':');
                     if (splitAddress.Length != 2)
                     {
