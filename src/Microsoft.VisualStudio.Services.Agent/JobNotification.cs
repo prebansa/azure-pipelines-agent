@@ -119,7 +119,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 }
                 catch (Exception e)
                 {
-                    Trace.Error($"Unexpected error occured while connecting monitor");
+                    Trace.Error($"Unexpected error occured while connecting to processmonitor");
                     Trace.Error(e);
                 }
                 try
