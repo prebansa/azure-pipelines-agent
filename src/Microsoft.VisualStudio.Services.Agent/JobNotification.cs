@@ -163,8 +163,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                     Trace.Error(e);
                 }
             }
-
-            ConnectMonitor(monitorSocketAddress);
         }
         
         private void StartMonitor(Guid jobId, string accessToken, Uri serverUri)
