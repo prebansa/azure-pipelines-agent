@@ -104,8 +104,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 publishCCCommand.ProcessCommand(_ec.Object, command);
                 Assert.Equal(0, _warnings.Count);
                 Assert.Equal(0, _errors.Count);
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.Is<bool>(browsable => browsable == true), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.Is<bool>(browsable => browsable == true), It.IsAny<CancellationToken>()));
                 Assert.True(File.Exists(Path.Combine(reportDirectory, "frame-summary.html")));
                 Assert.True(File.Exists(Path.Combine(reportDirectory, "indexnew.html")));
 
@@ -138,8 +138,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 publishCCCommand.ProcessCommand(_ec.Object, command);
                 Assert.Equal(0, _warnings.Count);
                 Assert.Equal(0, _errors.Count);
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.Is<bool>(browsable => browsable == true), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.Is<bool>(browsable => browsable == true), It.IsAny<CancellationToken>()));
                 Assert.True(File.Exists(Path.Combine(reportDirectory, "index.html")));
                 Assert.True(File.Exists(Path.Combine(reportDirectory, "index.htm")));
             }
@@ -172,8 +172,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 publishCCCommand.ProcessCommand(_ec.Object, command);
                 Assert.Equal(0, _warnings.Count);
                 Assert.Equal(0, _errors.Count);
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.Is<bool>(browsable => browsable == true), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.Is<bool>(browsable => browsable == true), It.IsAny<CancellationToken>()));
                 Assert.True(File.Exists(Path.Combine(reportDirectory, "index.html")));
                 Assert.True(File.Exists(Path.Combine(reportDirectory, "index.htm")));
             }
@@ -203,7 +203,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 publishCCCommand.ProcessCommand(_ec.Object, command);
                 Assert.Equal(1, _warnings.Count);
                 Assert.Equal(0, _errors.Count);
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()));
             }
             finally
             {
@@ -232,8 +232,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 publishCCCommand.ProcessCommand(_ec.Object, command);
                 Assert.Equal(0, _warnings.Count);
                 Assert.Equal(0, _errors.Count);
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<long>(),
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(),
                     It.Is<List<Tuple<string, string>>>(files => files.Count == 1), It.IsAny<bool>(), It.IsAny<CancellationToken>()));
             }
             finally
@@ -261,8 +261,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 publishCCCommand.ProcessCommand(_ec.Object, command);
                 Assert.Equal(0, _warnings.Count);
                 Assert.Equal(0, _errors.Count);
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<long>(),
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(),
                     It.Is<List<Tuple<string, string>>>(files => files.Count == 2), It.IsAny<bool>(), It.IsAny<CancellationToken>()));
             }
             finally
@@ -293,8 +293,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 publishCCCommand.ProcessCommand(_ec.Object, command);
                 Assert.Equal(0, _warnings.Count);
                 Assert.Equal(0, _errors.Count);
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
-                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<long>(),
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+                _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(),
                     It.Is<List<Tuple<string, string>>>(files => files.Count == 2), It.IsAny<bool>(), It.IsAny<CancellationToken>()));
             }
             finally

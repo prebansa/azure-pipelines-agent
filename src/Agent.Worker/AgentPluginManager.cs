@@ -5,19 +5,19 @@ using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
+using Microsoft.TeamFoundation.Framework.Common;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
     [ServiceLocator(Default = typeof(AgentPluginManager))]
     public interface IAgentPluginManager : IAgentService
     {
-        AgentTaskPluginInfo GetPluginTask(Guid taskId, string taskVersion);
+        List<string> GetTaskPlugins(Guid taskId);
         AgentCommandPluginInfo GetPluginCommad(string commandArea, string commandEvent);
         Task RunPluginTaskAsync(IExecutionContext context, string plugin, Dictionary<string, string> inputs, Dictionary<string, string> environment, Variables runtimeVariables, EventHandler<ProcessDataReceivedEventArgs> outputHandler);
         void ProcessCommand(IExecutionContext context, Command command);
@@ -26,14 +26,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public sealed class AgentPluginManager : AgentService, IAgentPluginManager
     {
         private readonly Dictionary<string, Dictionary<string, AgentCommandPluginInfo>> _supportedLoggingCommands = new Dictionary<string, Dictionary<string, AgentCommandPluginInfo>>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<Guid, Dictionary<string, AgentTaskPluginInfo>> _supportedTasks = new Dictionary<Guid, Dictionary<string, AgentTaskPluginInfo>>();
+        private readonly Dictionary<Guid, List<string>> _supportedTasks = new Dictionary<Guid, List<string>>();
 
         private readonly HashSet<string> _taskPlugins = new HashSet<string>()
         {
             "Agent.Plugins.Repository.CheckoutTask, Agent.Plugins",
             "Agent.Plugins.Repository.CleanupTask, Agent.Plugins",
             "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTask, Agent.Plugins",
-            "Agent.Plugins.PipelineArtifact.PublishPipelineArtifactTask, Agent.Plugins"
+            "Agent.Plugins.PipelineArtifact.PublishPipelineArtifactTask, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.PublishPipelineArtifactTaskV1, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV1, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV1_1_0, Agent.Plugins",
+            "Agent.Plugins.PipelineCache.SavePipelineCacheV0, Agent.Plugins",
+            "Agent.Plugins.PipelineCache.RestorePipelineCacheV0, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV1_1_1, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV1_1_2, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV1_1_3, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV2_0_0, Agent.Plugins",
+            "Agent.Plugins.PipelineArtifact.PublishPipelineArtifactTaskV0_140_0, Agent.Plugins"
         };
 
         private readonly HashSet<string> _commandPlugins = new HashSet<string>();
@@ -60,31 +70,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 ArgUtil.NotNull(taskPlugin, nameof(taskPlugin));
                 ArgUtil.NotNull(taskPlugin.Id, nameof(taskPlugin.Id));
-                ArgUtil.NotNullOrEmpty(taskPlugin.Version, nameof(taskPlugin.Version));
                 ArgUtil.NotNullOrEmpty(taskPlugin.Stage, nameof(taskPlugin.Stage));
                 if (!_supportedTasks.ContainsKey(taskPlugin.Id))
                 {
-                    _supportedTasks[taskPlugin.Id] = new Dictionary<string, AgentTaskPluginInfo>(StringComparer.OrdinalIgnoreCase);
+                    _supportedTasks[taskPlugin.Id] = new List<string>();
                 }
 
-                if (!_supportedTasks[taskPlugin.Id].ContainsKey(taskPlugin.Version))
-                {
-                    _supportedTasks[taskPlugin.Id][taskPlugin.Version] = new AgentTaskPluginInfo();
-                }
-
-                Trace.Info($"Loaded task plugin id '{taskPlugin.Id}' ({taskPlugin.Version}) ({taskPlugin.Stage}).");
-                if (taskPlugin.Stage == "pre")
-                {
-                    _supportedTasks[taskPlugin.Id][taskPlugin.Version].TaskPluginPreJobTypeName = pluginTypeName;
-                }
-                else if (taskPlugin.Stage == "main")
-                {
-                    _supportedTasks[taskPlugin.Id][taskPlugin.Version].TaskPluginTypeName = pluginTypeName;
-                }
-                else if (taskPlugin.Stage == "post")
-                {
-                    _supportedTasks[taskPlugin.Id][taskPlugin.Version].TaskPluginPostJobTypeName = pluginTypeName;
-                }
+                Trace.Info($"Loaded task plugin id '{taskPlugin.Id}' ({taskPlugin.Stage}).");
+                _supportedTasks[taskPlugin.Id].Add(pluginTypeName);
             }
 
             // Load command plugin
@@ -118,11 +111,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public AgentTaskPluginInfo GetPluginTask(Guid taskId, string taskVersion)
+        public List<string> GetTaskPlugins(Guid taskId)
         {
-            if (_supportedTasks.ContainsKey(taskId) && _supportedTasks[taskId].ContainsKey(taskVersion))
+            if (_supportedTasks.ContainsKey(taskId))
             {
-                return _supportedTasks[taskId][taskVersion];
+                return _supportedTasks[taskId];
             }
             else
             {
@@ -191,6 +184,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
             {
+                var redirectStandardIn = new InputQueue<string>();
+                redirectStandardIn.Enqueue(JsonUtility.ToString(pluginContext));
+
                 processInvoker.OutputDataReceived += outputHandler;
                 processInvoker.ErrorDataReceived += outputHandler;
 
@@ -204,7 +200,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                                                   requireExitCodeZero: true,
                                                   outputEncoding: Encoding.UTF8,
                                                   killProcessOnCancel: false,
-                                                  contentsToStandardIn: new List<string>() { JsonUtility.ToString(pluginContext) },
+                                                  redirectStandardIn: redirectStandardIn,
                                                   cancellationToken: context.CancellationToken);
             }
         }
@@ -276,7 +272,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         stderr.Add(e.Data);
                     };
-                }; ;
+                };
+
+                var redirectStandardIn = new InputQueue<string>();
+                redirectStandardIn.Enqueue(JsonUtility.ToString(pluginContext));
 
                 int returnCode = await processInvoker.ExecuteAsync(workingDirectory: workingDirectory,
                                                                    fileName: file,
@@ -285,7 +284,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                                                                    requireExitCodeZero: false,
                                                                    outputEncoding: null,
                                                                    killProcessOnCancel: false,
-                                                                   contentsToStandardIn: new List<string>() { JsonUtility.ToString(pluginContext) },
+                                                                   redirectStandardIn: redirectStandardIn,
                                                                    cancellationToken: token);
 
                 if (returnCode != 0)
@@ -317,12 +316,5 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         public string CommandPluginTypeName { get; set; }
         public string DisplayName { get; set; }
-    }
-
-    public class AgentTaskPluginInfo
-    {
-        public string TaskPluginPreJobTypeName { get; set; }
-        public string TaskPluginTypeName { get; set; }
-        public string TaskPluginPostJobTypeName { get; set; }
     }
 }

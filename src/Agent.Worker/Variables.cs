@@ -143,7 +143,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public int? Release_Parallel_Download_Limit => GetInt(Constants.Variables.Release.ReleaseParallelDownloadLimit);
 
-        public bool Retain_Default_Encoding => RetainDefaultEncoding();
+#if OS_WINDOWS
+        public bool Retain_Default_Encoding => GetBoolean(Constants.Variables.Agent.RetainDefaultEncoding) ?? true;
+#else
+        public bool Retain_Default_Encoding => true;
+#endif
 
         public string System_CollectionId => Get(Constants.Variables.System.CollectionId);
 
@@ -154,8 +158,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public bool? System_EnableAccessToken => GetBoolean(Constants.Variables.System.EnableAccessToken);
 
         public HostTypes System_HostType => GetEnum<HostTypes>(Constants.Variables.System.HostType) ?? HostTypes.None;
+        public string System_JobId => Get(Constants.Variables.System.JobId);
 
         public string System_PhaseDisplayName => Get(Constants.Variables.System.PhaseDisplayName);
+
+        public string System_PullRequest_TargetBranch => Get(Constants.Variables.System.PullRequestTargetBranchName);
 
         public string System_TaskDefinitionsUri => Get(WellKnownDistributedTaskVariables.TaskDefinitionsUrl);
 
@@ -164,6 +171,47 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public Guid? System_TeamProjectId => GetGuid(BuildWebApi.BuildVariables.TeamProjectId);
 
         public string System_TFCollectionUrl => Get(WellKnownDistributedTaskVariables.TFCollectionUrl);
+
+        public string System_StageName => Get(Constants.Variables.System.StageName);
+
+        public int? System_StageAttempt => GetInt(Constants.Variables.System.StageAttempt);
+
+        public string System_PhaseName => Get(Constants.Variables.System.PhaseName);
+
+        public int? System_PhaseAttempt => GetInt(Constants.Variables.System.PhaseAttempt);
+
+        public string System_JobName => Get(Constants.Variables.System.JobName);
+
+        public int? System_JobAttempt => GetInt(Constants.Variables.System.JobAttempt);
+
+
+        public static readonly HashSet<string> PiiVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Build.AuthorizeAs",
+            "Build.QueuedBy",
+            "Build.RequestedFor",
+            "Build.RequestedForEmail",
+            "Build.SourceBranch",
+            "Build.SourceBranchName",
+            "Build.SourceTfvcShelveset",
+            "Build.SourceVersion",
+            "Build.SourceVersionAuthor",
+            "Job.AuthorizeAs",
+            "Release.Deployment.RequestedFor",
+            "Release.Deployment.RequestedForEmail",
+            "Release.RequestedFor",
+            "Release.RequestedForEmail",
+        };
+
+        public static readonly string PiiArtifactVariablePrefix = "Release.Artifacts";
+
+        public static readonly List<string> PiiArtifactVariableSuffixes = new List<string>()
+        {
+            "SourceBranch",
+            "SourceBranchName",
+            "SourceVersion",
+            "RequestedFor"
+        };
 
         public void ExpandValues(IDictionary<string, string> target)
         {
@@ -451,18 +499,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 _expanded = expanded;
             } // End of critical section.
-        }
-
-        private bool RetainDefaultEncoding()
-        {
-#if OS_WINDOWS
-            object windowsReleaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", defaultValue: null);
-            if (int.TryParse(windowsReleaseId?.ToString(), out int releaseId) && releaseId >= 1709)
-            {
-                return GetBoolean(Constants.Variables.Agent.RetainDefaultEncoding) ?? false;
-            }
-#endif
-            return true;
         }
 
         private sealed class RecursionState

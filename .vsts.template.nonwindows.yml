@@ -1,4 +1,13 @@
+parameters:
+  componentDetection: 'false'
+
 steps:
+
+- ${{ if eq(parameters.componentDetection, 'true') }}:
+    # Component detection
+    - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+      displayName: 'Component Detection'
+      condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
 
 # Clean
 - checkout: self
@@ -24,10 +33,10 @@ steps:
     testRunTitle: 'Agent Tests'
 
 # Upload test log
-#- task: PublishBuildArtifacts@1
-#  displayName: Publish Test logs
-#  condition: always()
-#  inputs:
-#    pathToPublish: src/Test/TestLogs
-#    artifactName: $(System.JobId)
-#    artifactType: container
+- task: PublishBuildArtifacts@1
+  displayName: Publish Test logs
+  condition: always()
+  inputs:
+    pathToPublish: src/Test/TestLogs
+    artifactName: $(System.JobId)
+    artifactType: container
