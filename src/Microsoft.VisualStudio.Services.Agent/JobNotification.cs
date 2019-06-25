@@ -112,6 +112,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         public void StartClient(string socketAddress, string monitorSocketAddress)
         {
             ConnectMonitor(monitorSocketAddress);
+
             if (!_configured)
             {
                 try
