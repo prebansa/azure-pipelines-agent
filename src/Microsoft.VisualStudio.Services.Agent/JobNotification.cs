@@ -111,17 +111,9 @@ namespace Microsoft.VisualStudio.Services.Agent
 
         public void StartClient(string socketAddress, string monitorSocketAddress)
         {
+            ConnectMonitor(monitorSocketAddress);
             if (!_configured)
             {
-                try
-                {
-                    ConnectMonitor(monitorSocketAddress);
-                }
-                catch (Exception e)
-                {
-                    Trace.Error($"Unexpected error occured while connecting to processmonitor");
-                    Trace.Error(e);
-                }
                 try
                 {
                     string[] splitAddress = socketAddress.Split(':');
