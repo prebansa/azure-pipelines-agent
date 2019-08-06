@@ -60,7 +60,7 @@ namespace Agent.Plugins.PipelineArtifact
         protected override async Task ProcessCommandInternalAsync(
             AgentTaskPluginExecutionContext context, 
             CancellationToken token)
-        {           
+        {
             string artifactName = context.GetInput(ArtifactEventProperties.ArtifactName, required: false);
             string targetPath = context.GetInput(TargetPath, required: true);
             string defaultWorkingDirectory = context.Variables.GetValueOrDefault("system.defaultworkingdirectory").Value;
@@ -281,11 +281,11 @@ namespace Agent.Plugins.PipelineArtifact
             List<Build> list;
             if (buildVersionToDownload == "latest")
             {
-                list = await buildHttpClient.GetBuildsAsync(project, definitions, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending);
+                list = await buildHttpClient.GetBuildsAsync(project, definitions, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending, resultFilter: BuildResult.Succeeded);
             }
             else if (buildVersionToDownload == "latestFromBranch")
             {
-                list = await buildHttpClient.GetBuildsAsync(project, definitions, branchName: branchName, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending);
+                list = await buildHttpClient.GetBuildsAsync(project, definitions, branchName: branchName, tagFilters: tagFilters, queryOrder: BuildQueryOrder.FinishTimeDescending, resultFilter: BuildResult.Succeeded);
             }
             else
             {

@@ -1,15 +1,13 @@
 ## Features
-  - Calculate artifact size for build (file container) artifacts #2258
-  - Add jobId as source for artifacts #2278
-  - Capture telemetry from PA/PC tasks #2274
-  - Create publish pipeline artifact v1 task in agent #2279
-  - Update download path so that it's relative to workingDirectory for DPA V2 task #2282
+  - Pipeline Caching CacheBeta 1.0 agent changes #2358
   
 ## Bugs
-  - N/A
-  
+  - Getting the latest successful build instead of latest in DPA #2350
+  - Pass through parameters to listener #2353 
+  - Use ArtifactHttpClientFactory to generate dedupStoreClient that includes ArtifactHttpRetryHandler #2357
+
 ## Misc
-  - N/A
+  - Use Azure Artifacts for nugetvssprivate #2359
 
 ## Agent Downloads  
 

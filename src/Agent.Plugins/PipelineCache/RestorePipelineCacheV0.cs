@@ -1,47 +1,32 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Agent.Sdk;
-using Microsoft.TeamFoundation.Build.WebApi;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Microsoft.VisualStudio.Services.Agent.Util;
-using Microsoft.VisualStudio.Services.BlobStore.Common;
-using Microsoft.VisualStudio.Services.BlobStore.WebApi;
-using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using Microsoft.VisualStudio.Services.PipelineCache.WebApi;
-using Microsoft.VisualStudio.Services.WebApi;
-using Newtonsoft.Json;
 
 namespace Agent.Plugins.PipelineCache
 {    
     public class RestorePipelineCacheV0 : PipelineCacheTaskPluginBase
     {
-        public override Guid Id => PipelineCachePluginConstants.RestoreCacheTaskId;
+        public override string Stage => "main";
 
         protected override async Task ProcessCommandInternalAsync(
-            AgentTaskPluginExecutionContext context, 
-            string path, 
-            string keyStr,
-            string salt,
+            AgentTaskPluginExecutionContext context,
+            Fingerprint fingerprint,
+            Func<Fingerprint[]> restoreKeysGenerator,
+            string path,
             CancellationToken token)
         {
-            string[] key = keyStr.Split(
-                new[] { '\n' },
-                StringSplitOptions.RemoveEmptyEntries
-            );
-            string variableToSetOnHit = context.GetInput(PipelineCacheTaskPluginConstants.VariableToSetOnCacheHit, required: false);
+            context.SetTaskVariable(RestoreStepRanVariableName, RestoreStepRanVariableValue);
 
-            PipelineCacheServer server = new PipelineCacheServer();
+            var server = new PipelineCacheServer();
+            Fingerprint[] restoreFingerprints = restoreKeysGenerator();
             await server.DownloadAsync(
                 context, 
-                key, 
+                (new [] { fingerprint}).Concat(restoreFingerprints).ToArray(),
                 path,
-                salt,
-                variableToSetOnHit,
+                context.GetInput(PipelineCacheTaskPluginConstants.CacheHitVariable, required: false),
                 token);
         }
     }
