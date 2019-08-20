@@ -466,20 +466,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     // send notification to machine provisioner.
                     var systemConnection = message.Resources.Endpoints.SingleOrDefault(x => string.Equals(x.Name, WellKnownServiceEndpointNames.SystemVssConnection, StringComparison.OrdinalIgnoreCase));
                     var accessToken = systemConnection?.Authorization?.Parameters["AccessToken"];
-                    VariableValue buildId = new VariableValue("default");
-                    VariableValue definitionId = new VariableValue("default");
+                    VariableValue identifier = new VariableValue("0");
+                    VariableValue definitionId = new VariableValue("0");
                     if (message.Plan.PlanType == "Build")
                     {
-                        message.Variables.TryGetValue("build.buildId", out buildId);
+                        message.Variables.TryGetValue("build.buildId", out identifier);
                         message.Variables.TryGetValue("system.definitionId", out definitionId);
                     }
                     else if (message.Plan.PlanType == "Release")
                     {
-                        message.Variables.TryGetValue("release.deploymentId", out buildId);
+                        message.Variables.TryGetValue("release.deploymentId", out identifier);
                         message.Variables.TryGetValue("release.definitionId", out definitionId);
                     }
 
-                    await notification.JobStarted(message.JobId, accessToken, systemConnection.Url, message.Plan.PlanId, buildId.Value, definitionId.Value, message.Plan.PlanType);
+                    await notification.JobStarted(message.JobId, accessToken, systemConnection.Url, message.Plan.PlanId, identifier.Value, definitionId.Value, message.Plan.PlanType);
 
                     HostContext.WritePerfCounter($"SentJobToWorker_{requestId.ToString()}");
 
