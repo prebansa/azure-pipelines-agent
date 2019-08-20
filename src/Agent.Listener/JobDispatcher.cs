@@ -468,6 +468,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     var accessToken = systemConnection?.Authorization?.Parameters["AccessToken"];
                     VariableValue identifier = new VariableValue("0");
                     VariableValue definitionId = new VariableValue("0");
+
                     if (message.Plan.PlanType == "Build")
                     {
                         message.Variables.TryGetValue("build.buildId", out identifier);
