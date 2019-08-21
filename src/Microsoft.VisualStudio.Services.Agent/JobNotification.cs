@@ -12,7 +12,7 @@ namespace Microsoft.VisualStudio.Services.Agent
     [ServiceLocator(Default = typeof(JobNotification))]
     public interface IJobNotification : IAgentService, IDisposable
     {
-        Task JobStarted(Guid jobId, string accessToken, Uri serverUrl, Guid plainId, string buildId, string definitionId, string planType);
+        Task JobStarted(Guid jobId, string accessToken, Uri serverUrl, Guid planId, string identifier, string definitionId, string planType);
         Task JobCompleted(Guid jobId);
         void StartClient(string pipeName, string monitorSocketAddress, CancellationToken cancellationToken);
         void StartClient(string socketAddress, string monitorSocketAddress);
@@ -158,7 +158,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             }
         }
         
-        private void StartMonitor(Guid jobId, string accessToken, Uri serverUri, Guid plainId, string identifier, string definitionId, string planType)
+        private void StartMonitor(Guid jobId, string accessToken, Uri serverUri, Guid planId, string identifier, string definitionId, string planType)
         {
             if(String.IsNullOrEmpty(accessToken)) 
             {
@@ -171,7 +171,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Trace.Info("Entering StartMonitor");
                 if (_isMonitorConfigured)
                 {
-                    String message = $"Start {jobId.ToString()} {accessToken} {serverUri.ToString()} {System.Diagnostics.Process.GetCurrentProcess().Id} {plainId.ToString()} {identifier} {definitionId} {planType}";
+                    String message = $"Start {jobId.ToString()} {accessToken} {serverUri.ToString()} {System.Diagnostics.Process.GetCurrentProcess().Id} {planId.ToString()} {identifier} {definitionId} {planType}";
 
                     Trace.Info("Writing StartMonitor to socket");
                     _monitorSocket.Send(Encoding.UTF8.GetBytes(message));
